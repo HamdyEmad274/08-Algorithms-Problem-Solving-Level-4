@@ -1,3 +1,4 @@
+//Date 1 == Date 2 ??
 #include <iostream>
 #include <string>
 using namespace std;
@@ -13,6 +14,14 @@ short GetNumber(string message) {
 	short Number;
 	cin >> Number;
 	return Number;
+}
+short DaysInMonth(short year, short month) {
+	if (month < 1 || month > 12)
+	{
+		return 0;
+	}
+	short NumberOfDays[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
+	return NumberOfDays[month - 1] + (isLeapYear(year) && month == 2 ? 1 : 0);
 }
 bool CheckDay(short year, short month, short day) {
 	if (isLeapYear(year))
@@ -66,14 +75,6 @@ bool CheckMonth(short year, short month) {
 	}
 	return true;
 }
-short DaysInMonth(short year, short month) {
-	if (month < 1 || month > 12)
-	{
-		return 0;
-	}
-	short NumberOfDays[12] = { 31,28,31,30,31,30,31,31,30,31,30,31 };
-	return NumberOfDays[month - 1] + (isLeapYear(year) && month == 2 ? 1 : 0);
-}
 short NumberOfTheDayInYear(short year, short month, short day)
 {
 	if (CheckDay(year, month, day) && CheckMonth(year, month))
@@ -101,20 +102,27 @@ sDate ReadDate() {
 	date.year = GetNumber("Enter The Year : ");
 	return date;
 }
-bool IsDateOneBeforeDateTwo(sDate date1, sDate date2) {
-	return(date1.year < date2.year) ? true :
-		((date1.year == date2.year) ? (date1.month < date2.month ? true :
-			(date1.month == date2.month ? date1.day < date2.day : false)) : false);
+bool IsLastDayInMonth(sDate date)
+{
+	short daysInMonth = DaysInMonth(date.year, date.month);
+	return(daysInMonth == date.day);
+}
+bool IsLastDayInYear(sDate date)
+{
+	short daysInMonth = DaysInMonth(date.year, date.month);
+	return(date.month == 12 && daysInMonth == date.day);
 }
 int main()
 {
-	cout << "The First Date \n";
+	cout << "Enter The Date \n";
 	sDate date1 = ReadDate();
-	cout << "The Second Date \n";
-	sDate date2 = ReadDate();
-	if (IsDateOneBeforeDateTwo(date1, date2))
-		cout << "Yes Date 1 is older than date 2";
+	if (IsLastDayInMonth(date1))
+		cout << "Yes It's The Last Day in Month\n";
 	else
-		cout << "No Date 1 isn't newer than date 2";
+		cout << "No It's not The Last Day in Month\n";
+	if(IsLastDayInYear(date1))
+		cout << "Yes It's The Last Day in Year\n";
+	else
+		cout << "No It's not The Last Day in Year\n";
 	system("pause>0");
 }

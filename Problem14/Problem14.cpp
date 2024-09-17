@@ -1,3 +1,4 @@
+//Date 1 == Date 2 ??
 #include <iostream>
 #include <string>
 using namespace std;
@@ -101,10 +102,8 @@ sDate ReadDate() {
 	date.year = GetNumber("Enter The Year : ");
 	return date;
 }
-bool IsDateOneBeforeDateTwo(sDate date1, sDate date2) {
-	return(date1.year < date2.year) ? true :
-		((date1.year == date2.year) ? (date1.month < date2.month ? true :
-			(date1.month == date2.month ? date1.day < date2.day : false)) : false);
+bool IsDateOneEqualsDateTwo(sDate date1, sDate date2) {
+	return(date1.year == date2.year) ? (date1.month == date2.month ? date1.day == date2.day : false) : false;
 }
 int main()
 {
@@ -112,9 +111,9 @@ int main()
 	sDate date1 = ReadDate();
 	cout << "The Second Date \n";
 	sDate date2 = ReadDate();
-	if (IsDateOneBeforeDateTwo(date1, date2))
-		cout << "Yes Date 1 is older than date 2";
+	if (IsDateOneEqualsDateTwo(date1, date2))
+		cout << "Yes Date 1 is equal date 2";
 	else
-		cout << "No Date 1 isn't newer than date 2";
+		cout << "No Date 1 isn't equal date 2";
 	system("pause>0");
 }
