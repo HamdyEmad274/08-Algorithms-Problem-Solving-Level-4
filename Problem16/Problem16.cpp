@@ -1,4 +1,4 @@
-//Last Day in month and year?
+//Add One Day To Date
 #include <iostream>
 #include <string>
 using namespace std;
@@ -111,17 +111,39 @@ bool IsLastMonthInYear(short month)
 {
 	return(month == 12);
 }
+sDate AddOneDay(sDate date) {
+	if (IsLastMonthInYear(date.month))
+	{
+		if (IsLastDayInMonth(date))
+		{
+			date.year++;
+			date.month = 1;
+			date.day = 1;
+		}
+		else
+		{
+			date.day++;
+		}
+	}
+	else
+	{
+		if (IsLastDayInMonth(date))
+		{
+			date.month++;
+			date.day = 1;
+		}
+		else
+		{
+			date.day++;
+		}
+	}
+	return date;
+}
+
 int main()
 {
-	cout << "Enter The Date \n";
-	sDate date1 = ReadDate();
-	if (IsLastDayInMonth(date1))
-		cout << "Yes It's The Last Day in Month\n";
-	else
-		cout << "No It's not The Last Day in Month\n";
-	if(IsLastMonthInYear(date1.month))
-		cout << "Yes It's The Last Month in Year\n";
-	else
-		cout << "No It's not The Last Month in Year\n";
-	system("pause>0");
+	cout << "Enter The Date\n";
+	sDate date = ReadDate();// could be one step but maybe we need the first day later
+	date = AddOneDay(date);
+	cout << "The New Date after adding one day is " << date.day << " / " << date.month << " / " << date.year << endl;
 }
