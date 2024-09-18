@@ -149,10 +149,12 @@ bool IsDateOneBeforeDateTwo(sDate date1, sDate date2) {
 }
 short DiffBetween2Dates(sDate date1, sDate date2, bool includeLastDay = false) {
 	short diff = 0;
-	bool negative = false;
+	//bool negative = false;
+	short SwapFlagValue = 1;
 	if (!IsDateOneBeforeDateTwo(date1,date2))
 	{
-		negative = true;
+		//negative = true;
+		SwapFlagValue = -1;
 		sDate tmp = date1;
 		date1 = date2;
 		date2 = tmp;//swap
@@ -162,7 +164,8 @@ short DiffBetween2Dates(sDate date1, sDate date2, bool includeLastDay = false) {
 		date1 = AddOneDay(date1);
 		diff++;
 	}
-	return (includeLastDay) ? (negative?-(diff+1):diff+1) : (negative)?-diff:diff;
+	//return (includeLastDay) ? (negative?-(diff+1):diff+1) : (negative)?-diff:diff;
+	return (includeLastDay) ? ++diff * SwapFlagValue : diff * SwapFlagValue;
 }
 int main()
 {
