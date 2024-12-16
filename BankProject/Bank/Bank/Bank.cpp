@@ -7,12 +7,18 @@
 using namespace std;
 
 const string ClientsFileName = "Clients.txt";
+const string UsersFileName = "users.txt";
 void ShowMainScreen();
 void ShowTransactionsMenu();
 void GoBackToMainMenu();
 
 void GoBackToTransactionsMenu();
 
+struct stUser {
+	string Name;
+	string Password;
+	int permissions;
+};
 struct sClient {
 	string AccountNumber;
 	string PinCode;
@@ -160,7 +166,7 @@ void PrintAllClientsBalanceData(vector<sClient> vClients) {
 
 	cout << "\n_______________________________________________________";
 	cout << "_________________________________________\n" << endl;
-	cout <<"\t\t\t\t\t\tTotal Balance: " << TotalBalance << endl;
+	cout << "\t\t\t\t\t\tTotal Balance: " << TotalBalance << endl;
 	GoBackToMainMenu();
 }
 
@@ -509,7 +515,72 @@ void ShowMainScreen() {
 		break;
 	}
 }
+stUser ConvertLineToUserRecord(string line, string delimiter) {
+	stUser user;
+	vector<string> userData = SplitString(line, delimiter);
+	if (userData.size() == 3) {
+		user.Name = userData[0];
+		user.Password = userData[1];
+		user.permissions = stoi(userData[2]);
+	}
+	return user;
+}
+vector<stUser> LoadUsersDataFromFile(string fileName) {
+vector<stUser> vUsers;
+	fstream MyFile;
+	MyFile.open(fileName, ios::in);
+	if (MyFile.is_open())
+	{
+		string line;
+		while (getline(MyFile, line))
+		{
+			stUser user = ConvertLineToUserRecord(line,"#//#");
+			vUsers.push_back(user);
+		}
+		MyFile.close();
+	}
+	return vUsers;
+}
+bool IsValidUser(stUser user) {
+	vector<stUser> vUsers = LoadUsersDataFromFile(UsersFileName);
+	for (stUser& u : vUsers) {
+		if (u.Name == user.Name && u.Password == user.Password) {
+			return true;
+		}
+	}
+	return false;
+}
+
+void Login() {
+	bool loginFailed = false; 
+
+	while (true) {
+		system("cls"); 
+
+		cout << "===================================================";
+		cout << "\n\t\tLogin Screen\n";
+		cout << "===================================================";
+
+		if (loginFailed) {
+			cout << "\nInvalid Username or Password.\n";
+		}
+
+		stUser user;
+		user.Name = ReadString("Enter Username: ");
+		user.Password = ReadString("Enter Password: ");
+
+		if (IsValidUser(user)) {
+			system("cls"); 
+			ShowMainScreen(); 
+			break;
+		}
+		else {
+			loginFailed = true;
+		}
+	}
+}
 int main()
 {
-	ShowMainScreen();
+	Login();
+	return 0;
 }
