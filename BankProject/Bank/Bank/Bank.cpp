@@ -11,6 +11,8 @@ const string UsersFileName = "users.txt";
 void ShowMainScreen();
 void ShowTransactionsMenu();
 void GoBackToMainMenu();
+void Login();
+void ManageUsersScreen();
 
 void GoBackToTransactionsMenu();
 
@@ -94,6 +96,11 @@ string ReadString(string Message) {
 	cout << "\n" << Message;
 	getline(cin >> ws, String);
 	return String;
+}
+void PrintUserRecord(stUser User) {
+	cout << "| " << setw(15) << left << User.Name;
+	cout << "| " << setw(10) << left << User.Password;
+	cout << "| " << setw(40) << left << User.permissions;
 }
 void PrintClientRecord(sClient Client) {
 	cout << "| " << setw(15) << left << Client.AccountNumber;
@@ -470,10 +477,11 @@ void ShowMainScreen() {
 	cout << "\n\t[4] Update Client's Info.";
 	cout << "\n\t[5] Find Client.";
 	cout << "\n\t[6] Transactions.";
-	cout << "\n\t[7] Exit.\n";
+	cout << "\n\t[7] Manage Users.";
+	cout << "\n\t[8] Logout.\n";
 	cout << "===================================================\n";
 
-	switch (ChooseFromMenu("Enter Your Choice [1-7]: "))
+	switch (ChooseFromMenu("Enter Your Choice [1-8]: "))
 	{
 	case '1':
 		system("cls");
@@ -507,7 +515,11 @@ void ShowMainScreen() {
 
 	case '7':
 		system("cls");
-		cout << "Exiting....";
+		ManageUsersScreen();
+		break;
+	case '8':
+		system("cls");
+		Login();
 		break;
 
 	default:
@@ -577,6 +589,87 @@ void Login() {
 		else {
 			loginFailed = true;
 		}
+	}
+}
+vector<stUser> GetAllUsers(string fileName) 
+{
+	vector<stUser> vUsers;
+	fstream MyFile;
+	MyFile.open(fileName, ios::in);
+	if (MyFile.is_open())
+	{
+		string line;
+		while (getline(MyFile, line)) {
+			stUser user = ConvertLineToUserRecord(line,"#//#");
+			vUsers.push_back(user);
+		}
+		MyFile.close();
+	}
+	return vUsers;
+}
+void PrintAllUsersData(vector<stUser> vUsers) {
+	cout << "\n\t\t\t\t\tUsers List (" << vUsers.size() << ") User(s).";
+	cout << "\n_______________________________________________________";
+	cout << "_________________________________________\n" << endl;
+	cout << "| " << left << setw(15) << "UserName";
+	cout << "| " << left << setw(10) << "Password";
+	cout << "| " << left << setw(40) << "Permissions";
+	cout << "\n_______________________________________________________";
+	cout << "_________________________________________\n" << endl;
+
+	// Loop through each client and print their record
+	for (stUser& User : vUsers) {
+		PrintUserRecord(User);
+		cout << endl;
+	}
+
+	cout << "\n_______________________________________________________";
+	cout << "_________________________________________\n" << endl;
+	GoBackToMainMenu();
+}
+void ManageUsersScreen() {
+	cout << "===================================================";
+	cout << "\n\t\tManage Users Menu Screen\n";
+	cout << "===================================================";
+	cout << "\n\t[1] List Users.";
+	cout << "\n\t[2] Add New User.";
+	cout << "\n\t[3] Delete User.";
+	cout << "\n\t[4] Update User.";
+	cout << "\n\t[5] Find User.";
+	cout << "\n\t[6] Main Menu.\n";
+	cout << "===================================================\n";
+
+	switch (ChooseFromMenu("Enter Your Choice [1-6]: "))
+	{
+	case '1':
+		system("cls");
+		PrintAllUsersData(GetAllUsers(UsersFileName));
+		break;
+
+	case '2':
+		system("cls");
+		break;
+
+	case '3':
+		system("cls");
+		break;
+
+	case '4':
+		system("cls");
+		break;
+
+	case '5':
+		system("cls");
+		break;
+
+	case '6':
+		system("cls");
+		ShowMainScreen();
+		break;
+
+	default:
+		cout << "Invalid Option";
+		break;
 	}
 }
 int main()
