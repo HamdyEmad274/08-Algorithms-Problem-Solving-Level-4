@@ -19,11 +19,10 @@ void GoBackToTransactionsMenu();
 struct stUser {
 	string Name;
 	string Password;
-	int Permissions;
+	int Permissions = 0;
 	bool MarkForDelete = false;
 	bool MarkForUpdate = false;
-}
-;
+};
 struct sClient {
 	string AccountNumber;
 	string PinCode;
