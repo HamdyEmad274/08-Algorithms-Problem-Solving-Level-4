@@ -19,8 +19,11 @@ void GoBackToTransactionsMenu();
 struct stUser {
 	string Name;
 	string Password;
-	int permissions;
-};
+	int Permissions;
+	bool MarkForDelete = false;
+	bool MarkForUpdate = false;
+}
+;
 struct sClient {
 	string AccountNumber;
 	string PinCode;
@@ -75,6 +78,15 @@ string ConvertRecordToLine(sClient Client, string Seperator = "#//#") {
 
 	return stClientRecord;
 }
+string ConvertRecordToLine(stUser User, string Separator = "#//#") {
+	string stClientRecord = "";
+
+	stClientRecord += User.Name + Separator;
+	stClientRecord += User.Password + Separator;
+	stClientRecord += to_string(User.Permissions);
+
+	return stClientRecord;
+}
 vector<sClient> LoadClientsDataFromFile(string fileName) {
 	vector<sClient> Clients;
 	fstream MyFile;
@@ -100,7 +112,7 @@ string ReadString(string Message) {
 void PrintUserRecord(stUser User) {
 	cout << "| " << setw(15) << left << User.Name;
 	cout << "| " << setw(10) << left << User.Password;
-	cout << "| " << setw(40) << left << User.permissions;
+	cout << "| " << setw(40) << left << User.Permissions;
 }
 void PrintClientRecord(sClient Client) {
 	cout << "| " << setw(15) << left << Client.AccountNumber;
@@ -236,6 +248,25 @@ bool SaveClientsDataToFile(string fileName, vector<sClient> vClients) {
 		return false;
 	}
 }
+bool SaveUsersDataToFile(string fileName, vector<stUser> vUsers) {
+	fstream MyFile;
+	MyFile.open(fileName, ios::out);
+	if (MyFile.is_open())
+	{
+		for (stUser& User : vUsers) {
+			if (!User.MarkForDelete)
+			{
+				MyFile << ConvertRecordToLine(User) << endl;
+			}
+		}
+		MyFile.close();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 sClient FindClientByAccountNumber(string AccountNumber) {
 	sClient Client;
 	vector<sClient> vClients = LoadClientsDataFromFile(ClientsFileName);
@@ -254,6 +285,19 @@ bool MarkClientForDelete(sClient& Client) {
 	cin >> choice;
 	if (choice == 'Y' || choice == 'y') {
 		Client.MarkForDelete = true;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+bool MarkUserForDelete(stUser& User) {
+	char choice;
+	cout << "\nAre You Sure To Delete This Client? [Y/N]";
+	cin >> choice;
+	if (choice == 'Y' || choice == 'y') {
+		User.MarkForDelete = true;
 		return true;
 	}
 	else
@@ -460,6 +504,13 @@ void GoBackToMainMenu() {
 	system("cls");
 	ShowMainScreen();
 }
+void GoBackToUserMenu() {
+	cout << "Press Any Key To Return To Users Manager Menu...";
+	cin.ignore();
+	cin.get();
+	system("cls");
+	ManageUsersScreen();
+}
 void GoBackToTransactionsMenu() {
 	cout << "Press Any Key To Return To Transactions Menu...";
 	cin.ignore();
@@ -533,7 +584,7 @@ stUser ConvertLineToUserRecord(string line, string delimiter) {
 	if (userData.size() == 3) {
 		user.Name = userData[0];
 		user.Password = userData[1];
-		user.permissions = stoi(userData[2]);
+		user.Permissions = stoi(userData[2]);
 	}
 	return user;
 }
@@ -627,6 +678,74 @@ void PrintAllUsersData(vector<stUser> vUsers) {
 	cout << "_________________________________________\n" << endl;
 	GoBackToMainMenu();
 }
+bool AddingUserToFile(string fileName) {
+	bool bResult = false;
+	fstream MyFile;
+	vector<stUser> vUsers = LoadUsersDataFromFile(fileName);
+	MyFile.open(fileName, ios::app);
+	if (MyFile.is_open())
+	{
+		stUser NewUser;
+		NewUser.Name = ReadString("Enter User Name: ");
+		for (stUser& User : vUsers) {
+			do
+			{
+				if (User.Name == NewUser.Name) {
+					cout << "This User Name Is Already Exist. Please Enter Another One." << endl;
+					NewUser.Name = ReadString("Enter User Name: ");
+				}
+				else
+				{
+					break;
+				}
+			} while (true);
+		}
+		/*NewUser.U = ReadString("Enter Pin Code: ");
+		NewClient.Name = ReadString("Enter Name: ");
+		NewClient.Phone = ReadString("Enter Phone: ");
+		NewClient.AccountBalance = stod(ReadString("Enter Account Balance: "));
+		MyFile << ConvertRecordToLine(NewClient) << endl;
+		MyFile.close();
+		cout << "Client Added Successfully." << endl;
+		bResult = true;*/
+	}
+	else
+	{
+		bResult = false;
+		cout << "Could Not Add Client." << endl;
+	}
+
+	GoBackToMainMenu();
+	return bResult;
+}
+bool DeleteUserFromFile(string UserName) {
+	vector<stUser> vUsers = LoadUsersDataFromFile(UsersFileName);
+	for (stUser& User : vUsers) {
+		if (User.Name == UserName) {
+			PrintUserRecord(User);
+			if (MarkUserForDelete(User))
+			{
+				if (SaveUsersDataToFile(UsersFileName, vUsers))
+				{
+					cout << "User Deleted Successfully." << endl;
+					GoBackToUserMenu();
+					return true;
+				}
+
+			}
+			else
+			{
+				cout << "User Not Deleted." << endl;
+				GoBackToUserMenu();
+				return false;
+			}
+		}
+	}
+	cout << "User Not Found." << endl;
+	GoBackToUserMenu();
+	return false;
+
+}
 void ManageUsersScreen() {
 	cout << "===================================================";
 	cout << "\n\t\tManage Users Menu Screen\n";
@@ -652,6 +771,7 @@ void ManageUsersScreen() {
 
 	case '3':
 		system("cls");
+		DeleteUserFromFile(ReadString("Enter User Name: "));
 		break;
 
 	case '4':
