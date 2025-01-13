@@ -32,6 +32,15 @@ struct sClient {
 	bool MarkForDelete = false;
 	bool MarkForUpdate = false;
 };
+enum Permissions {
+	ShowClientList = 1 << 0,
+	AddNewClients = 1 << 1,
+	DeleteClients = 1 << 2,
+	UpdateClients = 1 << 3,
+	FindClients = 1 << 4,
+	Transaction = 1 << 5,
+	ManageUsers = 1 << 6
+};
 
 vector<string> SplitString(string S1, string Delim) {
 	vector<string> vString;
@@ -588,7 +597,7 @@ stUser ConvertLineToUserRecord(string line, string delimiter) {
 	return user;
 }
 vector<stUser> LoadUsersDataFromFile(string fileName) {
-vector<stUser> vUsers;
+	vector<stUser> vUsers;
 	fstream MyFile;
 	MyFile.open(fileName, ios::in);
 	if (MyFile.is_open())
@@ -596,7 +605,7 @@ vector<stUser> vUsers;
 		string line;
 		while (getline(MyFile, line))
 		{
-			stUser user = ConvertLineToUserRecord(line,"#//#");
+			stUser user = ConvertLineToUserRecord(line, "#//#");
 			vUsers.push_back(user);
 		}
 		MyFile.close();
@@ -614,10 +623,10 @@ bool IsValidUser(stUser user) {
 }
 
 void Login() {
-	bool loginFailed = false; 
+	bool loginFailed = false;
 
 	while (true) {
-		system("cls"); 
+		system("cls");
 
 		cout << "===================================================";
 		cout << "\n\t\tLogin Screen\n";
@@ -632,8 +641,8 @@ void Login() {
 		user.Password = ReadString("Enter Password: ");
 
 		if (IsValidUser(user)) {
-			system("cls"); 
-			ShowMainScreen(); 
+			system("cls");
+			ShowMainScreen();
 			break;
 		}
 		else {
@@ -641,7 +650,7 @@ void Login() {
 		}
 	}
 }
-vector<stUser> GetAllUsers(string fileName) 
+vector<stUser> GetAllUsers(string fileName)
 {
 	vector<stUser> vUsers;
 	fstream MyFile;
@@ -650,7 +659,7 @@ vector<stUser> GetAllUsers(string fileName)
 	{
 		string line;
 		while (getline(MyFile, line)) {
-			stUser user = ConvertLineToUserRecord(line,"#//#");
+			stUser user = ConvertLineToUserRecord(line, "#//#");
 			vUsers.push_back(user);
 		}
 		MyFile.close();
@@ -677,6 +686,43 @@ void PrintAllUsersData(vector<stUser> vUsers) {
 	cout << "_________________________________________\n" << endl;
 	GoBackToMainMenu();
 }
+int AddingPermissionsToUser() {
+	int Permissions = 0;
+	string choice = ReadString("Do You Want To Give Full Permissions To This User? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions = -1;
+		return Permissions;
+	}
+	choice = ReadString("Do You Want To Give Access To : \n\nShow Client List ? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions |= Permissions::ShowClientList;
+	}
+	choice = ReadString("\n\nAdd Client ? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions |= Permissions::AddNewClients;
+	}
+	choice = ReadString("\n\nDelete Client ? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions |= Permissions::DeleteClients;
+	}
+	choice = ReadString("\n\nUpdate Client ? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions |= Permissions::UpdateClients;
+	}
+	choice = ReadString("\n\nFind Client ? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions |= Permissions::FindClients;
+	}
+	choice = ReadString("\n\nTransactions ? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions |= Permissions::Transaction;
+	}
+	choice = ReadString("\n\nManage Users ? (y/n)");
+	if (choice == "y" || choice == "Y") {
+		Permissions |= Permissions::ManageUsers;
+	}
+	return Permissions;
+}
 bool AddingUserToFile(string fileName) {
 	bool bResult = false;
 	fstream MyFile;
@@ -699,22 +745,20 @@ bool AddingUserToFile(string fileName) {
 				}
 			} while (true);
 		}
-		/*NewUser.U = ReadString("Enter Pin Code: ");
-		NewClient.Name = ReadString("Enter Name: ");
-		NewClient.Phone = ReadString("Enter Phone: ");
-		NewClient.AccountBalance = stod(ReadString("Enter Account Balance: "));
-		MyFile << ConvertRecordToLine(NewClient) << endl;
+		NewUser.Password = ReadString("Enter Password: ");
+		NewUser.Permissions = AddingPermissionsToUser();
+		MyFile << ConvertRecordToLine(NewUser) << endl;
 		MyFile.close();
-		cout << "Client Added Successfully." << endl;
-		bResult = true;*/
+		cout << "User Added Successfully." << endl;
+		bResult = true;
 	}
 	else
 	{
 		bResult = false;
-		cout << "Could Not Add Client." << endl;
+		cout << "Could Not Add User." << endl;
 	}
 
-	GoBackToMainMenu();
+	GoBackToUserMenu();
 	return bResult;
 }
 bool DeleteUserFromFile(string UserName) {
@@ -766,6 +810,7 @@ void ManageUsersScreen() {
 
 	case '2':
 		system("cls");
+		AddingUserToFile(UsersFileName);
 		break;
 
 	case '3':
