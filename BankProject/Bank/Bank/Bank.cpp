@@ -8,12 +8,11 @@ using namespace std;
 
 const string ClientsFileName = "Clients.txt";
 const string UsersFileName = "users.txt";
-void ShowMainScreen();
 void ShowTransactionsMenu();
 void GoBackToMainMenu();
 void Login();
 void ManageUsersScreen();
-
+void AccessDenied();
 void GoBackToTransactionsMenu();
 
 struct stUser {
@@ -468,64 +467,6 @@ bool Withdraw() {
 	GoBackToTransactionsMenu();
 	return false;
 }
-void ShowTotalBalances() {
-	vector<sClient> vClients = LoadClientsDataFromFile(ClientsFileName);
-	PrintAllClientsBalanceData(vClients);
-}
-void ShowTransactionsMenu() {
-	cout << "===================================================";
-	cout << "\n\t\Transactions Menu Screen\n";
-	cout << "===================================================";
-	cout << "\n\t[1] Deposit.";
-	cout << "\n\t[2] Withdraw.";
-	cout << "\n\t[3] Total Balances.";
-	cout << "\n\t[4] Main Menu.\n";
-	cout << "===================================================\n";
-
-	switch (ChooseFromMenu("Enter Your Choice [1-4]: "))
-	{
-	case '1':
-		system("cls");
-		Deposit();
-		break;
-	case '2':
-		system("cls");
-		Withdraw();
-		break;
-	case '3':
-		system("cls");
-		ShowTotalBalances();
-		break;
-	case '4':
-		system("cls");
-		ShowMainScreen();
-		break;
-	default:
-		cout << "Invalid Option";
-		break;
-	}
-}
-void GoBackToMainMenu() {
-	cout << "Press Any Key To Return To Main Menu...";
-	cin.ignore();
-	cin.get();
-	system("cls");
-	ShowMainScreen();
-}
-void GoBackToUserMenu() {
-	cout << "Press Any Key To Return To Users Manager Menu...";
-	cin.ignore();
-	cin.get();
-	system("cls");
-	ManageUsersScreen();
-}
-void GoBackToTransactionsMenu() {
-	cout << "Press Any Key To Return To Transactions Menu...";
-	cin.ignore();
-	cin.get();
-	system("cls");
-	ShowTransactionsMenu();
-}
 void ShowMainScreen() {
 	cout << "===================================================";
 	cout << "\n\t\tMain Menu Screen\n";
@@ -544,10 +485,13 @@ void ShowMainScreen() {
 	{
 	case '1':
 		system("cls");
+
 		PrintAllClientsData(LoadClientsDataFromFile(ClientsFileName));
+
 		break;
 	case '2':
 		system("cls");
+
 		cout << "Adding Clients....";
 		AddingClientToFile(ClientsFileName);
 		break;
@@ -586,6 +530,208 @@ void ShowMainScreen() {
 		break;
 	}
 }
+void AccessDenied(stUser CurrentUser) {
+	cout << "\n\n----------------------------------------\nAccess Denied. \nYou Don't Have The Required Permissions.\nPlease Contact The Admin.\n----------------------------------------" << endl;
+	cout << "\n\n\nPress Any Key To Return To Main Menu...";
+	cin.ignore();
+	cin.get();
+	system("cls");
+	ShowMainScreen();
+}
+
+void ShowMainScreen(stUser CurrentUser) {
+	cout << "===================================================";
+	cout << "\n\t\tMain Menu Screen\n";
+	cout << "===================================================";
+	cout << "\n\t[1] Show Client(s) List.";
+	cout << "\n\t[2] Add New Client.";
+	cout << "\n\t[3] Delete Client.";
+	cout << "\n\t[4] Update Client's Info.";
+	cout << "\n\t[5] Find Client.";
+	cout << "\n\t[6] Transactions.";
+	cout << "\n\t[7] Manage Users.";
+	cout << "\n\t[8] Logout.\n";
+	cout << "===================================================\n";
+
+	switch (ChooseFromMenu("Enter Your Choice [1-8]: "))
+	{
+	case '1':
+		system("cls");
+		if (CurrentUser.Permissions & Permissions::ShowClientList)
+			PrintAllClientsData(LoadClientsDataFromFile(ClientsFileName));
+		else
+			AccessDenied(CurrentUser);
+		break;
+	case '2':
+		system("cls");
+		if (CurrentUser.Permissions & Permissions::AddNewClients) {
+			cout << "Adding Clients....";
+			AddingClientToFile(ClientsFileName);
+		}
+		else
+			AccessDenied(CurrentUser);
+		break;
+	case '3':
+		system("cls");
+		if (CurrentUser.Permissions & Permissions::DeleteClients)
+		{
+			cout << "Delete Clients....";
+			DeleteClientFromFile(ReadString("Enter Account Number: "));
+		}
+		else
+			AccessDenied(CurrentUser);
+		break;
+	case '4':
+		system("cls");
+		if (CurrentUser.Permissions & Permissions::UpdateClients) {
+			cout << "Update Clients....";
+			UpdateClientFromFile(ReadString("Enter Account Number: "));
+		}
+		else
+			AccessDenied(CurrentUser);
+		break;
+	case '5':
+		system("cls");
+		if (CurrentUser.Permissions & Permissions::ShowClientList) {
+			cout << "Finding Clients....";
+			PrintSingleClientRecord(FindClientByAccountNumber(ReadString("Enter Account Number: ")));
+			GoBackToMainMenu();
+		}
+		else
+			AccessDenied(CurrentUser);
+		break;
+	case '6':
+		system("cls");
+		if (CurrentUser.Permissions & Permissions::Transaction)
+			ShowTransactionsMenu();
+		else
+			AccessDenied(CurrentUser);
+		break;
+
+	case '7':
+		system("cls");
+		if (CurrentUser.Permissions & Permissions::ManageUsers)
+			ManageUsersScreen();
+		else
+			AccessDenied(CurrentUser);
+		break;
+	case '8':
+		system("cls");
+		Login();
+		break;
+
+	default:
+		cout << "Invalid Option";
+		break;
+	}
+}
+
+void ShowTotalBalances() {
+	vector<sClient> vClients = LoadClientsDataFromFile(ClientsFileName);
+	PrintAllClientsBalanceData(vClients);
+}
+void ShowTransactionsMenu(stUser CurrentUser) {
+	cout << "===================================================";
+	cout << "\n\t\Transactions Menu Screen\n";
+	cout << "===================================================";
+	cout << "\n\t[1] Deposit.";
+	cout << "\n\t[2] Withdraw.";
+	cout << "\n\t[3] Total Balances.";
+	cout << "\n\t[4] Main Menu.\n";
+	cout << "===================================================\n";
+
+	switch (ChooseFromMenu("Enter Your Choice [1-4]: "))
+	{
+	case '1':
+		system("cls");
+		Deposit();
+		break;
+	case '2':
+		system("cls");
+		Withdraw();
+		break;
+	case '3':
+		system("cls");
+		ShowTotalBalances();
+		break;
+	case '4':
+		system("cls");
+		ShowMainScreen(CurrentUser);
+		break;
+	default:
+		cout << "Invalid Option";
+		break;
+	}
+}
+void ShowTransactionsMenu() {
+	cout << "===================================================";
+	cout << "\n\t\Transactions Menu Screen\n";
+	cout << "===================================================";
+	cout << "\n\t[1] Deposit.";
+	cout << "\n\t[2] Withdraw.";
+	cout << "\n\t[3] Total Balances.";
+	cout << "\n\t[4] Main Menu.\n";
+	cout << "===================================================\n";
+
+	switch (ChooseFromMenu("Enter Your Choice [1-4]: "))
+	{
+	case '1':
+		system("cls");
+		Deposit();
+		break;
+	case '2':
+		system("cls");
+		Withdraw();
+		break;
+	case '3':
+		system("cls");
+		ShowTotalBalances();
+		break;
+	case '4':
+		system("cls");
+		ShowMainScreen();
+		break;
+	default:
+		cout << "Invalid Option";
+		break;
+	}
+}
+void GoBackToMainMenu(stUser CurrentUser) {
+	cout << "Press Any Key To Return To Main Menu...";
+	cin.ignore();
+	cin.get();
+	system("cls");
+	ShowMainScreen(CurrentUser);
+}
+void GoBackToMainMenu() {
+	cout << "Press Any Key To Return To Main Menu...";
+	cin.ignore();
+	cin.get();
+	system("cls");
+	ShowMainScreen();
+}
+void GoBackToUserMenu() {
+	cout << "Press Any Key To Return To Users Manager Menu...";
+	cin.ignore();
+	cin.get();
+	system("cls");
+	ManageUsersScreen();
+}
+void GoBackToTransactionsMenu() {
+	cout << "Press Any Key To Return To Transactions Menu...";
+	cin.ignore();
+	cin.get();
+	system("cls");
+	ShowTransactionsMenu();
+}
+void AccessDenied() {
+	cout << "\n\n----------------------------------------\nAccess Denied. \nYou Don't Have The Required Permissions.\nPlease Contact The Admin.\n----------------------------------------" << endl;
+	cout << "\n\n\nPress Any Key To Return To Main Menu...";
+	cin.ignore();
+	cin.get();
+	system("cls");
+	ShowMainScreen();
+}
 stUser ConvertLineToUserRecord(string line, string delimiter) {
 	stUser user;
 	vector<string> userData = SplitString(line, delimiter);
@@ -612,10 +758,11 @@ vector<stUser> LoadUsersDataFromFile(string fileName) {
 	}
 	return vUsers;
 }
-bool IsValidUser(stUser user) {
+bool IsValidUser(stUser &user) {
 	vector<stUser> vUsers = LoadUsersDataFromFile(UsersFileName);
 	for (stUser& u : vUsers) {
 		if (u.Name == user.Name && u.Password == user.Password) {
+			user = u;
 			return true;
 		}
 	}
@@ -642,7 +789,7 @@ void Login() {
 
 		if (IsValidUser(user)) {
 			system("cls");
-			ShowMainScreen();
+			ShowMainScreen(user);
 			break;
 		}
 		else {
@@ -788,6 +935,53 @@ bool DeleteUserFromFile(string UserName) {
 	GoBackToUserMenu();
 	return false;
 
+}
+void ManageUsersScreen(stUser User) {
+	cout << "===================================================";
+	cout << "\n\t\tManage Users Menu Screen\n";
+	cout << "===================================================";
+	cout << "\n\t[1] List Users.";
+	cout << "\n\t[2] Add New User.";
+	cout << "\n\t[3] Delete User.";
+	cout << "\n\t[4] Update User.";
+	cout << "\n\t[5] Find User.";
+	cout << "\n\t[6] Main Menu.\n";
+	cout << "===================================================\n";
+
+	switch (ChooseFromMenu("Enter Your Choice [1-6]: "))
+	{
+	case '1':
+		system("cls");
+		PrintAllUsersData(GetAllUsers(UsersFileName));
+		break;
+
+	case '2':
+		system("cls");
+		AddingUserToFile(UsersFileName);
+		break;
+
+	case '3':
+		system("cls");
+		DeleteUserFromFile(ReadString("Enter User Name: "));
+		break;
+
+	case '4':
+		system("cls");
+		break;
+
+	case '5':
+		system("cls");
+		break;
+
+	case '6':
+		system("cls");
+		ShowMainScreen(User);
+		break;
+
+	default:
+		cout << "Invalid Option";
+		break;
+	}
 }
 void ManageUsersScreen() {
 	cout << "===================================================";
