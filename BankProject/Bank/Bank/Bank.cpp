@@ -12,7 +12,6 @@ void ShowTransactionsMenu();
 void GoBackToMainMenu();
 void Login();
 void ManageUsersScreen();
-void AccessDenied();
 void GoBackToTransactionsMenu();
 
 struct stUser {
@@ -22,6 +21,7 @@ struct stUser {
 	bool MarkForDelete = false;
 	bool MarkForUpdate = false;
 };
+void ShowMainScreen(stUser CurrentUser);
 struct sClient {
 	string AccountNumber;
 	string PinCode;
@@ -530,15 +530,15 @@ void ShowMainScreen() {
 		break;
 	}
 }
+
 void AccessDenied(stUser CurrentUser) {
 	cout << "\n\n----------------------------------------\nAccess Denied. \nYou Don't Have The Required Permissions.\nPlease Contact The Admin.\n----------------------------------------" << endl;
 	cout << "\n\n\nPress Any Key To Return To Main Menu...";
 	cin.ignore();
 	cin.get();
 	system("cls");
-	ShowMainScreen();
+	ShowMainScreen(CurrentUser);
 }
-
 void ShowMainScreen(stUser CurrentUser) {
 	cout << "===================================================";
 	cout << "\n\t\tMain Menu Screen\n";
@@ -625,7 +625,6 @@ void ShowMainScreen(stUser CurrentUser) {
 		break;
 	}
 }
-
 void ShowTotalBalances() {
 	vector<sClient> vClients = LoadClientsDataFromFile(ClientsFileName);
 	PrintAllClientsBalanceData(vClients);
@@ -724,14 +723,14 @@ void GoBackToTransactionsMenu() {
 	system("cls");
 	ShowTransactionsMenu();
 }
-void AccessDenied() {
-	cout << "\n\n----------------------------------------\nAccess Denied. \nYou Don't Have The Required Permissions.\nPlease Contact The Admin.\n----------------------------------------" << endl;
-	cout << "\n\n\nPress Any Key To Return To Main Menu...";
-	cin.ignore();
-	cin.get();
-	system("cls");
-	ShowMainScreen();
-}
+//void AccessDenied() {
+//	cout << "\n\n----------------------------------------\nAccess Denied. \nYou Don't Have The Required Permissions.\nPlease Contact The Admin.\n----------------------------------------" << endl;
+//	cout << "\n\n\nPress Any Key To Return To Main Menu...";
+//	cin.ignore();
+//	cin.get();
+//	system("cls");
+//	ShowMainScreen();
+//}
 stUser ConvertLineToUserRecord(string line, string delimiter) {
 	stUser user;
 	vector<string> userData = SplitString(line, delimiter);
