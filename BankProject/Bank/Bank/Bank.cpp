@@ -12,8 +12,8 @@ void ShowTransactionsMenu();
 void GoBackToMainMenu();
 void Login();
 void ManageUsersScreen();
+int AddingPermissionsToUser();
 void GoBackToTransactionsMenu();
-
 struct stUser {
 	string Name;
 	string Password;
@@ -21,6 +21,8 @@ struct stUser {
 	bool MarkForDelete = false;
 	bool MarkForUpdate = false;
 };
+vector<stUser> LoadUsersDataFromFile(string fileName);
+
 void ShowMainScreen(stUser CurrentUser);
 struct sClient {
 	string AccountNumber;
@@ -325,6 +327,19 @@ bool MarkClientForUpdate(sClient& Client) {
 		return false;
 	}
 }
+bool MarkUserForUpdate(stUser& User) {
+	char choice;
+	cout << "Are You Sure To Update This User? [Y/N]";
+	cin >> choice;
+	if (choice == 'Y' || choice == 'y') {
+		User.MarkForUpdate = true;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 sClient UpdateClient() {
 	sClient UpdatedClient;
 	UpdatedClient.PinCode = ReadString("Enter Pin Code: ");
@@ -332,6 +347,24 @@ sClient UpdateClient() {
 	UpdatedClient.Phone = ReadString("Enter Phone: ");
 	UpdatedClient.AccountBalance = stod(ReadString("Enter Account Balance: "));
 	return UpdatedClient;
+}
+stUser FindUserByName(string Name) {
+	vector<stUser> vUsers = LoadUsersDataFromFile(UsersFileName);
+	for (stUser& User : vUsers) {
+		if (User.Name == Name) {
+			return User;
+		}
+	}
+	return stUser();
+}
+stUser UpdateUser() {
+	stUser UpdatedUser = FindUserByName(ReadString("Enter User Name: "));
+	cout << endl;
+	PrintUserRecord(UpdatedUser);
+	cout << endl;
+	UpdatedUser.Password = ReadString("Enter Password: ");
+	UpdatedUser.Permissions = AddingPermissionsToUser();
+	return UpdatedUser;
 }
 bool UpdateClientFromFile(string AccountNumber) {
 	vector<sClient> vClients = LoadClientsDataFromFile(ClientsFileName);
@@ -361,6 +394,31 @@ bool UpdateClientFromFile(string AccountNumber) {
 	cout << "Client Not Found." << endl;
 	GoBackToMainMenu();
 	return false;
+}
+bool UpdateUserFromFile(string Name) {
+	vector<stUser> vUsers = LoadUsersDataFromFile(UsersFileName);
+	for (stUser& User : vUsers) {
+		if (User.Name == Name) {
+			PrintUserRecord(User);
+			if (MarkUserForUpdate(User))
+			{
+				stUser UpdatedUser = UpdateUser();
+				User = UpdatedUser;
+				if (SaveUsersDataToFile(UsersFileName, vUsers))
+				{
+					cout << "User Updated Successfully." << endl;
+					GoBackToMainMenu();
+					return true;
+				}
+			}
+			else
+			{
+				cout << "User Not Updated." << endl;
+				GoBackToMainMenu();
+				return false;
+			}
+		}
+	}
 }
 bool DeleteClientFromFile(string AccountNumber) {
 	vector<sClient> vClients = LoadClientsDataFromFile(ClientsFileName);
@@ -757,7 +815,7 @@ vector<stUser> LoadUsersDataFromFile(string fileName) {
 	}
 	return vUsers;
 }
-bool IsValidUser(stUser &user) {
+bool IsValidUser(stUser& user) {
 	vector<stUser> vUsers = LoadUsersDataFromFile(UsersFileName);
 	for (stUser& u : vUsers) {
 		if (u.Name == user.Name && u.Password == user.Password) {
@@ -935,6 +993,7 @@ bool DeleteUserFromFile(string UserName) {
 	return false;
 
 }
+
 void ManageUsersScreen(stUser User) {
 	cout << "===================================================";
 	cout << "\n\t\tManage Users Menu Screen\n";
@@ -966,6 +1025,7 @@ void ManageUsersScreen(stUser User) {
 
 	case '4':
 		system("cls");
+		UpdateUserFromFile(ReadString("Enter User Name: "));
 		break;
 
 	case '5':
@@ -1013,6 +1073,7 @@ void ManageUsersScreen() {
 
 	case '4':
 		system("cls");
+		UpdateUserFromFile(ReadString("Enter User Name: "));
 		break;
 
 	case '5':
