@@ -18,8 +18,11 @@ enum Commands {
 	QuickWithdraw = 1,
 	NormalWithdraw,
 	Deposit,
-	CheckBalance
+	CheckBalance,
+	Exit
 };
+void ShowMenu();
+void Login();
 vector<string> SplitString(string S1, string Delim) {
 	vector<string> vString;
 	size_t pos = 0;
@@ -39,7 +42,7 @@ vector<string> SplitString(string S1, string Delim) {
 
 	return vString;
 }
-stCard ConvertLinetoRecord(string Line, string Seperator = "#//#") {
+stCard ConvertLineToRecord(string Line, string Seperator = "#//#") {
 	stCard Card;
 	vector<string> vCardsData = SplitString(Line, Seperator);
 
@@ -48,7 +51,7 @@ stCard ConvertLinetoRecord(string Line, string Seperator = "#//#") {
 	Card.balance = stod(vCardsData[2]);
 	return Card;
 }
-string ConvertRecordtoLine(stCard Card, string Seperator = "#//#") {
+string ConvertRecordToLine(stCard Card, string Seperator = "#//#") {
 	string Line;
 	Line = Card.pinCode + Seperator + Card.password + Seperator + to_string(Card.balance);
 	return Line;
@@ -58,7 +61,7 @@ vector <stCard> LoadCards(string CardsFile) {
 	ifstream File(CardsFile);
 	string Line;
 	while (getline(File, Line)) {
-		Cards.push_back(ConvertLinetoRecord(Line));
+		Cards.push_back(ConvertLineToRecord(Line));
 	}
 	return Cards;
 }
@@ -78,17 +81,94 @@ bool isValidCard(stCard& Card) {
 	}
 	return false;
 }
+bool UpdateCard(string CardFile) {
+	vector<stCard> Cards = LoadCards(CardsFile);
+	for (int i = 0; i < Cards.size(); i++) {
+		if (Cards[i].pinCode == globalCard.pinCode && Cards[i].password == globalCard.password) {
+			Cards[i].balance = globalCard.balance;
+			ofstream File(CardsFile);
+			for (int j = 0; j < Cards.size(); j++) {
+				File << ConvertRecordToLine(Cards[j]) << endl;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+void QuickWithdrawScreen() {
+	int QuickWithdrawOptions[] = { 50, 100, 200, 500, 1000, 2000, 5000, 10000 };
+	system("cls");
+	cout << "===================================================";
+	cout << "\n\t\tQuick Withdraw Screen\n";
+	cout << "===================================================";
+	cout << "\n\t[1] 50 LE \t\t [2] 100 LE\n";
+	cout << "\t[3] 200 LE \t\t [4] 500 LE\n";
+	cout << "\t[5] 1000 LE \t\t [6] 2000 LE\n";
+	cout << "\t[7] 5000 LE \t\t [8] 10000 LE\n";
+	cout << "\t[9] Exit\n";
+	cout << "===================================================\n";
+	cout << "your balance is: " << globalCard.balance << " LE\n";
+	string choice = ReadString("Choose what you want to withdraw: [1-8]");
+	cout << "Are you sure you want to withdraw " << QuickWithdrawOptions[stoi(choice) - 1] << " LE ? (y/n)\n";
+	if (cin.get() == 'y' || cin.get() == 'Y')
+	{
+		if (globalCard.balance < QuickWithdrawOptions[stoi(choice) - 1])
+		{
+			cout << "You don't have enough balance\n";
+			cout << "Press any key to go back to the menu ...\n";
+			cin.get();
+			ShowMenu();
+		}
+		globalCard.balance -= QuickWithdrawOptions[stoi(choice) - 1];
+		if (UpdateCard(CardsFile)) {
+			cout << "Your balance is now: " << globalCard.balance << " LE\n";
+			cout << "Press any key to go back to the menu ...\n";
+			cin.ignore();
+			cin.get();
+			ShowMenu();
+		}
+		else {
+			cout << "Error in updating card data\n";
+			cout << "Press any key to go back to the menu ...\n";
+			cin.get();
+			ShowMenu();
+		}
+	}
+}
+void NormalWithdrawScreen() {
+	system("cls");
+	cout << "===================================================";
+	cout << "\n\t\Normal Withdraw Screen\n";
+	cout << "===================================================";
+	cout << "your balance is: " << globalCard.balance << " LE\n";
+	string amount = ReadString("please, enter the amount you want to withdraw");
+
+}
+void CheckBalanceScreen() {
+	system("cls");
+	cout << "===================================================";
+	cout << "\n\t\tCheck Balance Screen\n";
+	cout << "===================================================";
+	cout << "\nYour Balance is: " << globalCard.balance << " LE\n";
+	cout << "\nPress any key to go back to the menu ...\n";
+	cin.get();
+	ShowMenu();
+}
 void ScreenOpener(Commands Command) {
 	switch (Command)
 	{
 	case QuickWithdraw:
+		QuickWithdrawScreen();
 		break;
 	case NormalWithdraw:
 		break;
 	case Deposit:
 		break;
 	case CheckBalance:
+		CheckBalanceScreen();
 		break;
+	case Exit:
+		Login();
 	default:
 		ShowMenu();
 		break;
@@ -107,12 +187,12 @@ void ShowMenu() {
 	cout << "4. Check Balance\n";
 	cout << "5. Exit\n";
 	cout << "===================================================\n";
-	cout << "Enter Your Choice: [1-5]";
-
+	ScreenOpener(Commands(stoi(ReadString("Enter your choice: [1-5]"))));
 
 }
 void Login() {
 	bool loggedIn = false;
+	bool wrongPin = false;
 	while (!loggedIn) {
 		system("cls");
 
@@ -120,7 +200,7 @@ void Login() {
 		cout << "\n\t\tLogin Screen\n";
 		cout << "===================================================";
 
-		if (loggedIn) {
+		if (wrongPin) {
 			cout << "\nInvalid PinCode or Password.\n";
 		}
 		stCard Card;
@@ -131,14 +211,18 @@ void Login() {
 		{
 			system("cls");
 			globalCard = Card;
+			loggedIn = true;
 			ShowMenu();
+		}
+		else {
+			wrongPin = true;
 		}
 	}
 }
 
 int main()
 {
-	cout << "Hello World!\n";
+	Login();
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
